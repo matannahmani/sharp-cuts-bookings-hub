@@ -1,38 +1,97 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+interface Reservation {
+  id: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string;
+  service: string;
+  date: string;
+  time: string;
+  status: string;
+  created_at: string;
+}
 
 const Dashboard = () => {
-  // In a real app, this would fetch from a backend
-  const [reservations] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      service: "Haircut",
-      date: "2025-04-25",
-      time: "10:00",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      service: "Full Service",
-      date: "2025-04-25",
-      time: "11:00",
-    },
-  ]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchReservations();
+  }, []);
+
+  const fetchReservations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+      setReservations(data || []);
+    } catch (error) {
+      console.error('Error fetching reservations:', error);
+      toast({
+        title: "Error",
+        description: "Could not load reservations. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6 text-barbershop-dark">Reservations Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {reservations.map((reservation) => (
-          <Card key={reservation.id} className="p-4">
-            <h3 className="font-bold text-lg mb-2">{reservation.name}</h3>
-            <p>Service: {reservation.service}</p>
-            <p>Date: {reservation.date}</p>
-            <p>Time: {reservation.time}</p>
-          </Card>
-        ))}
+      <div className="bg-white rounded-lg shadow">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Client Name</TableHead>
+              <TableHead>Service</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Time</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Contact</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {reservations.map((reservation) => (
+              <TableRow key={reservation.id}>
+                <TableCell>{reservation.client_name}</TableCell>
+                <TableCell>{reservation.service}</TableCell>
+                <TableCell>{new Date(reservation.date).toLocaleDateString()}</TableCell>
+                <TableCell>{reservation.time}</TableCell>
+                <TableCell>
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {reservation.status}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="text-sm">
+                    <p>{reservation.client_email}</p>
+                    <p>{reservation.client_phone}</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

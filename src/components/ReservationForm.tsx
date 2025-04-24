@@ -3,12 +3,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ReservationForm = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
+    client_name: "",
+    client_email: "",
+    client_phone: "",
     date: "",
     time: "",
     service: "",
@@ -16,22 +17,37 @@ export const ReservationForm = () => {
 
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send data to a backend
-    console.log("Reservation submitted:", formData);
-    toast({
-      title: "Reservation Submitted",
-      description: "We'll contact you to confirm your appointment.",
-    });
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      date: "",
-      time: "",
-      service: "",
-    });
+    
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .insert([formData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Reservation Submitted",
+        description: "We'll contact you to confirm your appointment.",
+      });
+
+      setFormData({
+        client_name: "",
+        client_email: "",
+        client_phone: "",
+        date: "",
+        time: "",
+        service: "",
+      });
+    } catch (error) {
+      console.error('Error submitting reservation:', error);
+      toast({
+        title: "Error",
+        description: "Could not submit reservation. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -39,22 +55,22 @@ export const ReservationForm = () => {
       <Input
         type="text"
         placeholder="Your Name"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        value={formData.client_name}
+        onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
         required
       />
       <Input
         type="email"
         placeholder="Email"
-        value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        value={formData.client_email}
+        onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
         required
       />
       <Input
         type="tel"
         placeholder="Phone"
-        value={formData.phone}
-        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+        value={formData.client_phone}
+        onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
         required
       />
       <Input

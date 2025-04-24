@@ -60,6 +60,45 @@ export type Database = {
         }
         Relationships: []
       }
+      reservations: {
+        Row: {
+          client_email: string
+          client_name: string
+          client_phone: string
+          created_at: string | null
+          date: string
+          id: string
+          service: string
+          status: string
+          time: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_email: string
+          client_name: string
+          client_phone: string
+          created_at?: string | null
+          date: string
+          id?: string
+          service: string
+          status?: string
+          time: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_email?: string
+          client_name?: string
+          client_phone?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          service?: string
+          status?: string
+          time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           category: string
