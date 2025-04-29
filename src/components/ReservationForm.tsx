@@ -1,9 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getServerDate } from "@/services/dateService";
 
 export const ReservationForm = () => {
   const [formData, setFormData] = useState({
@@ -14,8 +15,43 @@ export const ReservationForm = () => {
     time: "",
     service: "",
   });
-
+  
+  const [serverDate, setServerDate] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchServerDate = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getServerDate();
+        
+        // Format the date for the input (YYYY-MM-DD)
+        const dateObj = new Date(response.date);
+        const formattedDate = dateObj.toISOString().split('T')[0];
+        
+        setServerDate(formattedDate);
+        toast({
+          title: "Server Date Retrieved",
+          description: `The current server date is: ${response.formattedDate}`,
+        });
+      } catch (error) {
+        console.error("Failed to fetch server date:", error);
+        toast({
+          title: "Error",
+          description: "Could not retrieve server date. Using local date instead.",
+          variant: "destructive",
+        });
+        // Fallback to local date
+        const today = new Date().toISOString().split('T')[0];
+        setServerDate(today);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchServerDate();
+  }, [toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,12 +109,19 @@ export const ReservationForm = () => {
         onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
         required
       />
-      <Input
-        type="date"
-        value={formData.date}
-        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-        required
-      />
+      <div className="space-y-2">
+        <label className="block text-sm text-gray-600">
+          Date (Server date: {serverDate || "Loading..."})
+        </label>
+        <Input
+          type="date"
+          value={formData.date}
+          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          min={serverDate}
+          disabled={isLoading}
+          required
+        />
+      </div>
       <Input
         type="time"
         value={formData.time}
@@ -97,8 +140,12 @@ export const ReservationForm = () => {
         <option value="beard-trim">Beard Trim</option>
         <option value="full-service">Full Service</option>
       </select>
-      <Button type="submit" className="w-full bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-cream">
-        Book Appointment
+      <Button 
+        type="submit" 
+        className="w-full bg-barbershop-gold text-barbershop-dark hover:bg-barbershop-cream"
+        disabled={isLoading}
+      >
+        {isLoading ? "Loading..." : "Book Appointment"}
       </Button>
     </form>
   );
