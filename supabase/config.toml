@@ -6,3 +6,7 @@ verify_jwt = false
 
 [functions.get-services]
 verify_jwt = false
+
+[functions.services-api]
+verify_jwt = false
+

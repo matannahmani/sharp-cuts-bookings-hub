@@ -18,9 +18,14 @@ export const Navbar = () => {
             Home
           </Link>
           {user && (
-            <Link to="/dashboard" className="hover:text-barbershop-gold transition-colors">
-              Dashboard
-            </Link>
+            <>
+              <Link to="/dashboard" className="hover:text-barbershop-gold transition-colors">
+                Dashboard
+              </Link>
+              <Link to="/services" className="hover:text-barbershop-gold transition-colors">
+                Services
+              </Link>
+            </>
           )}
           
           <div className="ml-4">

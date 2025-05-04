@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ServiceManagement from "./pages/ServiceManagement";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/services" element={<ServiceManagement />} />
             <Route path="/auth/:action" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
