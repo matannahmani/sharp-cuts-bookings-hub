@@ -35,8 +35,7 @@ interface ServicesResponse {
 export const fetchServices = async (): Promise<ServicesResponse> => {
   try {
     const { data, error } = await supabase.functions.invoke('services-api', {
-      method: 'GET',
-      path: '/services'
+      method: 'GET'
     });
     
     if (error) {
@@ -56,7 +55,6 @@ export const createService = async (serviceData: ServiceCreateInput): Promise<Se
   try {
     const { data, error } = await supabase.functions.invoke('services-api', {
       method: 'POST',
-      path: '/services',
       body: serviceData
     });
     
@@ -77,8 +75,7 @@ export const updateService = async (id: string, serviceData: Partial<ServiceCrea
   try {
     const { data, error } = await supabase.functions.invoke('services-api', {
       method: 'PUT',
-      path: `/services/${id}`,
-      body: serviceData
+      body: { id, ...serviceData }
     });
     
     if (error) {
@@ -98,7 +95,7 @@ export const deleteService = async (id: string): Promise<ServiceResponse> => {
   try {
     const { data, error } = await supabase.functions.invoke('services-api', {
       method: 'DELETE',
-      path: `/services/${id}`
+      body: { id }
     });
     
     if (error) {

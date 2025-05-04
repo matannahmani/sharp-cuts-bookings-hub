@@ -37,8 +37,8 @@ const authMiddleware = async (c: any, next: any) => {
   return await next();
 };
 
-// Get all services
-app.get('/services', async (c) => {
+// Get all services - GET /
+app.get('/', async (c) => {
   const { data, error } = await supabase
     .from('services')
     .select('*')
@@ -51,8 +51,8 @@ app.get('/services', async (c) => {
   return c.json({ services: data, timestamp: new Date().toISOString() });
 });
 
-// Create new service (requires authentication)
-app.post('/services', authMiddleware, async (c) => {
+// Create new service (requires authentication) - POST /
+app.post('/', authMiddleware, async (c) => {
   const body = await c.req.json();
   
   // Validate required fields
@@ -78,26 +78,32 @@ app.post('/services', authMiddleware, async (c) => {
   return c.json({ success: true, service: data[0] });
 });
 
-// Update service (requires authentication)
-app.put('/services/:id', authMiddleware, async (c) => {
-  const id = c.req.param('id');
+// Update service (requires authentication) - PUT /
+app.put('/', authMiddleware, async (c) => {
   const body = await c.req.json();
+  const id = body.id;
+  
+  if (!id) {
+    return c.json({ error: 'Service ID is required' }, 400);
+  }
   
   // Validate required fields
   if ((!body.name && !body.price && !body.duration && !body.category && !body.description)) {
     return c.json({ error: 'No fields to update' }, 400);
   }
   
+  // Create an update object with only the fields provided
+  const updateData: any = {};
+  if (body.name) updateData.name = body.name;
+  if (body.description !== undefined) updateData.description = body.description;
+  if (body.price) updateData.price = body.price;
+  if (body.duration) updateData.duration = body.duration;
+  if (body.category) updateData.category = body.category;
+  updateData.updated_at = new Date().toISOString();
+  
   const { data, error } = await supabase
     .from('services')
-    .update({
-      name: body.name,
-      description: body.description,
-      price: body.price,
-      duration: body.duration,
-      category: body.category,
-      updated_at: new Date().toISOString()
-    })
+    .update(updateData)
     .eq('id', id)
     .select();
   
@@ -112,9 +118,14 @@ app.put('/services/:id', authMiddleware, async (c) => {
   return c.json({ success: true, service: data[0] });
 });
 
-// Delete service (requires authentication)
-app.delete('/services/:id', authMiddleware, async (c) => {
-  const id = c.req.param('id');
+// Delete service (requires authentication) - DELETE /
+app.delete('/', authMiddleware, async (c) => {
+  const body = await c.req.json();
+  const id = body.id;
+  
+  if (!id) {
+    return c.json({ error: 'Service ID is required' }, 400);
+  }
   
   const { error } = await supabase
     .from('services')
