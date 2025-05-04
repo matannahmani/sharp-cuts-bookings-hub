@@ -3,3 +3,6 @@ project_id = "nnlxomvycytegwgptucv"
 
 [functions.get-current-date]
 verify_jwt = false
+
+[functions.get-services]
+verify_jwt = false
